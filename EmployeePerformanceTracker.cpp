@@ -13,37 +13,29 @@
 
 #include <iostream>
 #include <string>
-#include <limits>  // needed for clearing bad input from cin
+
 using namespace std;
 
 int main() {
     int numEmployees;
 
-    cout << "=== Employee Monthly Performance Tracker ===" << endl;
-    cout << endl;
+    cout << "=== Employee Monthly Performance Tracker ===" << endl << endl;
 
-    // get number of employees, make sure its a valid positive number
+    // Ask for number of employees
     while (true) {
         cout << "How many employees will be evaluated? ";
         cin >> numEmployees;
 
         if (cin.fail()) {
-            // user typed something thats not a number
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin.clear(); // clear error state
+            cin.ignore(10000, '\n'); // clear out the bad input
             cout << "That's not a valid number. Try again." << endl;
         }
-        else if (numEmployees <= 0) {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "You need at least 1 employee. Try again." << endl;
-        }
-        else if (numEmployees > 50) {
-            // putting a cap so nobody enters something crazy
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Max 50 employees at a time. Try again." << endl;
+        else if (numEmployees <= 0 || numEmployees > 50) {
+            cout << "Invalid number. Enter a value between 1 and 50." << endl;
         }
         else {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin.ignore(10000, '\n'); // clears the newline character for getline later
             break;
         }
     }
@@ -54,72 +46,64 @@ int main() {
 
         cout << "\n--- Employee " << (i + 1) << " ---" << endl;
 
-        // get name - using getline so names with spaces work
+        // ask for the name
         cout << "Enter employee's name: ";
         getline(cin, name);
 
-        // check if name is empty
-        while (name.empty()) {
-            cout << "Name can't be blank. Enter employee's name: ";
+        // make sure they actually typed a name
+        while (name == "" || name == " ") {
+            cout << "Name can't be empty. Enter employee's name: ";
             getline(cin, name);
         }
 
-        // get days worked with validation
+        // ask for days worked
         while (true) {
             cout << "Enter the number of days worked this month: ";
             cin >> daysWorked;
 
             if (cin.fail()) {
                 cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Please enter a number." << endl;
+                cin.ignore(10000, '\n');
+                cout << "Please enter a real number for days." << endl;
             }
-            else if (daysWorked < 0) {
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "Days can't be negative." << endl;
-            }
-            else if (daysWorked > 31) {
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "A month only has up to 31 days. Try again." << endl;
+            else if (daysWorked < 0 || daysWorked > 31) {
+                cout << "Invalid days. Enter a number from 0 to 31." << endl;
             }
             else {
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // valid input
                 break;
             }
         }
 
-        // handle the case where someone worked 0 days
         if (daysWorked == 0) {
             cout << "\n>>> Results for " << name << " <<<" << endl;
-            cout << "  Days worked:            0" << endl;
-            cout << "  No scores to calculate." << endl;
-            cout << "  Performance rating:     N/A" << endl;
-            continue;  // skip to next employee
+            cout << "No days worked. Rating: N/A" << endl;
+            // clean the buffer just in case before the next loop
+            cin.ignore(10000, '\n');
+            continue; 
         }
 
         int totalScore = 0;
-        int highestScore = 0;
-        int lowestScore = 100;
+        int highestScore = -1; // start low
+        int lowestScore = 101; // start high
 
         for (int day = 0; day < daysWorked; day++) {
             int score;
 
-            // keep asking until we get a valid score between 0 and 100
+            // keep asking until we get a good score
             while (true) {
                 cout << "  Productivity score for day " << (day + 1) << " (0-100): ";
                 cin >> score;
 
                 if (cin.fail()) {
                     cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cout << "  That's not a number. Try again." << endl;
+                    cin.ignore(10000, '\n');
+                    cout << "  Oops! That's not a number. Try again." << endl;
                 }
                 else if (score < 0 || score > 100) {
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    cout << "  Invalid score! Please enter a value between 0 and 100." << endl;
+                    cout << "  Invalid! Enter score 0-100." << endl;
                 }
                 else {
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     break;
                 }
             }
@@ -134,10 +118,9 @@ int main() {
             }
         }
 
-        // calculate average - need to cast to double so we dont get integer division
-        double averageScore = static_cast<double>(totalScore) / daysWorked;
+        double averageScore = (double)totalScore / daysWorked;
 
-        // figure out the rating based on the average
+        // Find the rating
         string rating;
         if (averageScore >= 80) {
             rating = "Excellent";
@@ -152,17 +135,17 @@ int main() {
             rating = "Needs Improvement";
         }
 
-        // print out the results for this employee
         cout << "\n>>> Results for " << name << " <<<" << endl;
-        cout << "  Days worked:            " << daysWorked << endl;
-        cout << "  Total productivity:     " << totalScore << endl;
-        cout << "  Average productivity:   " << averageScore << endl;
-        cout << "  Highest daily score:    " << highestScore << endl;
-        cout << "  Lowest daily score:     " << lowestScore << endl;
-        cout << "  Performance rating:     " << rating << endl;
+        cout << "  Days worked: " << daysWorked << endl;
+        cout << "  Total: " << totalScore << endl;
+        cout << "  Average: " << averageScore << endl;
+        cout << "  High: " << highestScore << " | Low: " << lowestScore << endl;
+        cout << "  Rating: " << rating << endl;
+
+        // Clear the new line character so the next employee name doesn't break
+        cin.ignore(10000, '\n');
     }
 
-    cout << "\n=== All employees processed. Goodbye! ===" << endl;
-
+    cout << "\nAll done. Goodbye!" << endl;
     return 0;
 }
